@@ -37,11 +37,15 @@ USER mc
 
 # download server jar
 WORKDIR /usr/local/src/papermc
-RUN if [ "$VERSION" = "" ]; then \
-      VERSION=$(curl https://api.papermc.io/v2/projects/paper | jq -r .versions[-1]) \
-;     LAST_BUILD=$(curl https://api.papermc.io/v2/projects/paper/versions/$VERSION/builds | jq .builds[-1]) \
-;     BUILD_NUM=$(echo $LAST_BUILD | jq .build) \
-;     BUILD_NAME=$(echo $LAST_BUILD | jq -r .downloads.application.name) \
+RUN if [ "$VERSION" = "" ] || [ "${BUILD_NUM}" = "" ] || [ "${BUILD_NAME}" = "" ]; then \
+      if [ "${VERSION}" = "" ]; then \
+            VERSION=$(curl https://api.papermc.io/v2/projects/paper | jq -r .versions[-1]) \
+;     fi \
+;     if [ "${BUILD_NAME}" = "" ] || [ "${BUILD_NUM}" = "" ]; then \
+            LAST_BUILD=$(curl https://api.papermc.io/v2/projects/paper/versions/$VERSION/builds | jq .builds[-1]) \
+;           BUILD_NUM=$(echo $LAST_BUILD | jq .build) \
+;           BUILD_NAME=$(echo $LAST_BUILD | jq -r .downloads.application.name) \
+;     fi \
 ;   fi \
 ;   curl -f https://api.papermc.io/v2/projects/paper/versions/$VERSION/builds/$BUILD_NUM/downloads/$BUILD_NAME -o paper.jar \
 ;   chmod o+rx ./paper.jar
